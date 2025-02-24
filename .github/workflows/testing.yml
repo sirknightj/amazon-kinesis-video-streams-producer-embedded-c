@@ -19,25 +19,29 @@ jobs:
       with:
         submodules: 'recursive'
 
+    - name: Install dependencies
+      run: |
+        brew install coreutils # for gtimeout 
+
     - name: Fix the const issue
       run: |
         mv const-fix.patch ./libraries/amazon/amazon-kinesis-video-streams-media-interface
         cd ./libraries/amazon/amazon-kinesis-video-streams-media-interface
         git apply const-fix.patch
 
-#    - name: Edit the constants
-#      run: |
-#        sed -i '' 's/us-east-1/us-west-2/g' ./samples/kvsapp/sample_config.h
-#        sed -i '' 's/kvs_example_camera_stream/demo-stream/g' ./samples/kvsapp/sample_config.h
-#
-#        cat ./samples/kvsapp/sample_config.h
+    - name: Edit the constants
+      run: |
+        sed -i '' 's/us-east-1/us-west-2/g' ./samples/kvsapp/sample_config.h
+        sed -i '' 's/kvs_example_camera_stream/demo-stream/g' ./samples/kvsapp/sample_config.h
+
+        cat ./samples/kvsapp/sample_config.h
 
 
     - name: Build project
       run: |
         mkdir build
         cd build
-        cmake ..
+        cmake .. -DCMAKE_BUILD_TYPE="Debug"
         make -j$(sysctl -n hw.cpu)
 
     - name: Setup AWS Credentials
@@ -49,5 +53,7 @@ jobs:
     - name: Run the sample
       working-directory: ./build
       run: |
-        ./bin/kvsappcli
-
+        gtimeout --preserve-status --signal=INT 30s --kill-after=15s ./bin/kvsappcli
+        exit_code=$?
+        
+        echo "Process exited with code: $exit_code"
