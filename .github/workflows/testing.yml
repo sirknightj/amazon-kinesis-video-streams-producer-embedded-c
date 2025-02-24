@@ -32,7 +32,7 @@ jobs:
         mkdir build
         cd build
         cmake ..
-        make -j$(nproc)
+        make -j$(sysctl -n hw.cpu)
 
     - name: Setup AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
