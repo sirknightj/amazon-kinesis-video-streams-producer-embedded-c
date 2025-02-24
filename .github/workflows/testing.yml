@@ -53,7 +53,7 @@ jobs:
     - name: Run the sample
       working-directory: ./build
       run: |
-        gtimeout --preserve-status --signal=INT 30s --kill-after=15s ./bin/kvsappcli
+        gtimeout --signal=SIGINT --kill-after=15s --preserve-status 30s ./bin/kvsappcli
         exit_code=$?
         
         echo "Process exited with code: $exit_code"
