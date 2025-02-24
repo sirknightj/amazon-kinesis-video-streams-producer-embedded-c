@@ -15,6 +15,12 @@ jobs:
       with:
         submodules: 'recursive'
 
+    - name: Fix the const issue
+      run: |
+        mv const-fix.patch ./libraries/amazon/amazon-kinesis-video-streams-media-interface
+        cd ./libraries/amazon/amazon-kinesis-video-streams-media-interface
+        git apply const-fix.patch
+
     - name: Edit the constants
       run: |
         sed -i '' 's/us-east-1/us-west-2/g' ./samples/kvsapp/sample_config.h
