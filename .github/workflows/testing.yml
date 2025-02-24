@@ -1,0 +1,41 @@
+name: CMake
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+    - name: Edit the constants
+      run: |
+        sed -i 's/us-east-1/us-west-2/g' ./samples/kvsapp/sample_config.h
+        sed -i 's/kvs_example_camera_stream/demo-stream/g' ./samples/kvsapp/sample_config.h
+
+
+    - name: Build project
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        make -j$(nproc)
+
+    - name: Setup AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: us-east-3
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
+    - name: Run the sample
+      working-directory: ./build
+      run: |
+        ./bin/kvsappcli
+
