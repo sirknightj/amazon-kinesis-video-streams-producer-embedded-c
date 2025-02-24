@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: macos-13
 
     steps:
     - uses: actions/checkout@v4
@@ -31,7 +31,7 @@ jobs:
     - name: Setup AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-region: us-east-3
+        aws-region: us-west-2
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
 
     - name: Run the sample
