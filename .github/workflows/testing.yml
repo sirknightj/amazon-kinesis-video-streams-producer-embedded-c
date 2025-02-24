@@ -17,8 +17,8 @@ jobs:
 
     - name: Edit the constants
       run: |
-        sed -i 's/us-east-1/us-west-2/g' ./samples/kvsapp/sample_config.h
-        sed -i 's/kvs_example_camera_stream/demo-stream/g' ./samples/kvsapp/sample_config.h
+        sed -i '' 's/us-east-1/us-west-2/g' ./samples/kvsapp/sample_config.h
+        sed -i '' 's/kvs_example_camera_stream/demo-stream/g' ./samples/kvsapp/sample_config.h
 
 
     - name: Build project
