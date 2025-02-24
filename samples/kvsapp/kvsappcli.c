@@ -316,9 +316,13 @@ int main(int argc, char *argv[])
     const char *pKvsStreamName = NULL;
     DoWorkExParamter_t xDoWorkExParamter = {0};
 
+    printf("Heyyyyy!\n");
+
 #ifdef KVS_USE_POOL_ALLOCATOR
     poolAllocatorInit((void *)pMemPool, sizeof(pMemPool));
 #endif
+
+    printf("Here1 \n");
 
 #ifdef HAVE_SIGNAL_H
     /* Register interrupt signal handler so user can press Ctrl+C to exit this program gracefully. */
@@ -333,6 +337,7 @@ int main(int argc, char *argv[])
         printf("Failed to initialize KVS\n");
         return ERRNO_FAIL;
     }
+    printf("Created Stream\n");
 
 #if ENABLE_AUDIO_TRACK
 #if USE_AUDIO_G711
