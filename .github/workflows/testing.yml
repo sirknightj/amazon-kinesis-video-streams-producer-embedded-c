@@ -53,7 +53,21 @@ jobs:
     - name: Run the sample
       working-directory: ./build
       run: |
+        mkdir debug
+
         gtimeout --signal=SIGINT --kill-after=15s --preserve-status 30s ./bin/kvsappcli
         exit_code=$?
         
         echo "Process exited with code: $exit_code"
+
+    - name: Upload MKV file
+      uses: actions/upload-artifact@v4
+      with:
+        name: debug_output
+        path: build/debug/debug_output.mkv
+        retention-days: 3
+
+    - name: Add summary
+      run: |
+        echo "### View the MKV dump" >> $GITHUB_STEP_SUMMARY
+        echo "[Download debug_output.mkv](./artifacts/debug_output/debug_output.mkv)" >> $GITHUB_STEP_SUMMARY

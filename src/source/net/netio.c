@@ -79,10 +79,19 @@ static int prvCreateX509Cert(NetIo_t *pxNet)
     return res;
 }
 
+void mbedtls_debug(void *ctx, int level, const char *file, int line, const char *str) {
+    fprintf((FILE *)ctx, "%s:%04d: %s", file, line, str);
+}
+
+#include <mbedtls/debug.h>
+
 static int prvInitConfig(NetIo_t *pxNet, const char *pcHost, const char *pcRootCA, const char *pcCert, const char *pcPrivKey)
 {
     int res = KVS_ERRNO_NONE;
     int retVal = 0;
+
+    printf("-----------___--___");
+    printf("%s, %s, %s", pcRootCA, pcCert, pcPrivKey);
 
     if (pxNet == NULL)
     {
@@ -99,6 +108,9 @@ static int prvInitConfig(NetIo_t *pxNet, const char *pcHost, const char *pcRootC
         }
         else
         {
+//            mbedtls_ssl_conf_dbg(&(pxNet->xConf), mbedtls_debug, stdout);
+//            mbedtls_debug_set_threshold(2);
+
             mbedtls_ssl_conf_rng(&(pxNet->xConf), mbedtls_ctr_drbg_random, &(pxNet->xCtrDrbg));
             mbedtls_ssl_set_hostname(&(pxNet->xSsl), pcHost);
             mbedtls_ssl_conf_read_timeout(&(pxNet->xConf), pxNet->uRecvTimeoutMs);
@@ -201,6 +213,7 @@ NetIoHandle NetIo_create(void)
 
         if (mbedtls_ctr_drbg_seed(&(pxNet->xCtrDrbg), mbedtls_entropy_func, &(pxNet->xEntropy), NULL, 0) != 0)
         {
+            LogError("mbedtls_ctr_drbg_seed failed");
             NetIo_terminate(pxNet);
             pxNet = NULL;
         }

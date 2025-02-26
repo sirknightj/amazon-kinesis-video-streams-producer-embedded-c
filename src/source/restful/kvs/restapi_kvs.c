@@ -496,19 +496,32 @@ static int prvParseFragmentAck(char *pcSrc, size_t uLen, FragmentAck_t *pxFragAc
         LogInfo("Unknown fragment ack:%.*s", (int)uLen, pcSrc);
         /* Propagate the res error */
     }
-    else if ((xStFragMsg = STRING_construct_n(pcSrc + uBytesRead, uMsgLen)) == NULL ||
-             parseFragmentMsg(STRING_c_str(xStFragMsg), pxFragAck) != KVS_ERRNO_NONE)
+    else if (uBytesRead + uMsgLen > uLen) // Prevent out-of-bounds read
     {
-        res = KVS_ERROR_FAIL_TO_PARSE_FRAGMENT_ACK_MSG;
-        LogInfo("Failed to parse fragment ack");
+        res = KVS_ERROR_INVALID_ARGUMENT;
+        LogError("Invalid uMsgLen: %zu (exceeds buffer size uLen: %zu)", uMsgLen, uLen);
     }
     else
     {
-        *puFragAckLen = uBytesRead + uMsgLen + 2;
+        // Allocate a temporary buffer with a null terminator
+        char tempBuffer[uMsgLen + 1];
+        memcpy(tempBuffer, pcSrc + uBytesRead, uMsgLen);
+        tempBuffer[uMsgLen] = '\0';  // Ensure null termination
+
+        // STRING_construct_n uses strlen, so the input MUST be null terminated
+        if ((xStFragMsg = STRING_construct_n(tempBuffer, uMsgLen)) == NULL ||
+            parseFragmentMsg(STRING_c_str(xStFragMsg), pxFragAck) != KVS_ERRNO_NONE)
+        {
+            res = KVS_ERROR_FAIL_TO_PARSE_FRAGMENT_ACK_MSG;
+            LogInfo("Failed to parse fragment ack");
+        }
+        else
+        {
+            *puFragAckLen = uBytesRead + uMsgLen + 2;
+        }
     }
 
     STRING_delete(xStFragMsg);
-
     return res;
 }
 
@@ -1148,6 +1161,8 @@ int Kvs_putMediaStart(KvsServiceParameter_t *pServPara, KvsPutMediaParameter_t *
     return res;
 }
 
+static int g_mkvDumpCounter = 0;
+
 int Kvs_putMediaUpdate(PutMediaHandle xPutMediaHandle, uint8_t *pMkvHeader, size_t uMkvHeaderLen, uint8_t *pData, size_t uDataLen)
 {
     int res = KVS_ERRNO_NONE;
@@ -1187,6 +1202,24 @@ int Kvs_putMediaUpdate(PutMediaHandle xPutMediaHandle, uint8_t *pMkvHeader, size
             else
             {
                 /* nop */
+
+                char filename[256];
+                snprintf(filename, sizeof(filename), "./debug/dumped_output.mkv");
+
+                // Open in append mode
+                FILE *fpMkvDump = fopen(filename, "ab");
+                if (!fpMkvDump) {
+                    printf("Failed to open MKV dump file.\n");
+                } else {
+                    if (pMkvHeader && uMkvHeaderLen > 0) {
+                        fwrite(pMkvHeader, 1, uMkvHeaderLen, fpMkvDump);
+                    }
+                    if (pData && uDataLen > 0) {
+                        fwrite(pData, 1, uDataLen, fpMkvDump);
+                    }
+                    fclose(fpMkvDump);
+                    printf("MKV data dumped to %s\n", filename);
+                }
             }
         }
     }
@@ -1226,7 +1259,31 @@ int Kvs_putMediaUpdateRaw(PutMediaHandle xPutMediaHandle, uint8_t *pBuf, size_t 
             }
             else
             {
-                /* nop */
+                /* File dumping logic */
+                char filename[256];
+                snprintf(filename, sizeof(filename), "./debug/dumped_output.mkv");
+
+                // Reset the file if it's the first frame
+                if (g_mkvDumpCounter == 0) {
+                    FILE *fpReset = fopen(filename, "wb");
+                    if (!fpReset) {
+                        printf("Failed to reset MKV dump file.\n");
+                    } else {
+                        printf("MKV dump file reset.\n");
+                        fclose(fpReset);
+                    }
+                }
+                g_mkvDumpCounter++;
+
+                // Open file in append mode for writing raw data
+                FILE *fpMkvDump = fopen(filename, "ab");
+                if (!fpMkvDump) {
+                    printf("Failed to open MKV dump file.\n");
+                } else {
+                    fwrite(pBuf, 1, uLen, fpMkvDump);
+                    fclose(fpMkvDump);
+                    printf("Raw MKV data dumped to dumped_output.mkv\n");
+                }
             }
         }
     }
