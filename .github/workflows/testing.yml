@@ -70,7 +70,7 @@ jobs:
     - name: Add summary
       run: |
         echo "## 🎬 Debug Output MKV" >> $GITHUB_STEP_SUMMARY
-        echo "🔗 **Download the MKV file:** [debug_output.mkv](./artifacts/debug_output/debug_output.mkv)" >> $GITHUB_STEP_SUMMARY
+        echo "🔗 **Download the MKV file** by clicking on the generated file below in the \"**Artifacts**\" section." >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 📌 How to Check the MKV File" >> $GITHUB_STEP_SUMMARY
         echo "You can inspect the MKV file structure using \`mkvinfo\`:" >> $GITHUB_STEP_SUMMARY
@@ -85,9 +85,9 @@ jobs:
         echo 'unzip debug_output.zip' >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "Now run `mkvinfo` on it:" >> $GITHUB_STEP_SUMMARY
+        echo "Now run \`mkvinfo\` on it:" >> $GITHUB_STEP_SUMMARY
         echo '```sh' >> $GITHUB_STEP_SUMMARY
         echo 'mkvinfo -v dumped_output.mkv' >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
-        echo '> [!NOTE]'
-        echo "> You can also add the `-X` flag to have a hexdump as well." >> $GITHUB_STEP_SUMMARY
+        echo "> [!NOTE]" >> $GITHUB_STEP_SUMMARY
+        echo "> You can also add the \`-X\` flag to have a hexdump as well." >> $GITHUB_STEP_SUMMARY
