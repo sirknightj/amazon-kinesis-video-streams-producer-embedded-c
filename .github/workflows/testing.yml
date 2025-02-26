@@ -64,7 +64,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: debug_output
-        path: build/debug/debug_output.mkv
+        path: build/debug/dumped_output.mkv
         retention-days: 3
 
     - name: Add summary
