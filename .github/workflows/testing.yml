@@ -87,7 +87,7 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "Now run `mkvinfo` on it:" >> $GITHUB_STEP_SUMMARY
         echo '```sh' >> $GITHUB_STEP_SUMMARY
-        echo 'mkvinfo -v debug_output.mkv' >> $GITHUB_STEP_SUMMARY
+        echo 'mkvinfo -v dumped_output.mkv' >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
         echo '> [!NOTE]'
         echo "> You can also add the `-X` flag to have a hexdump as well." >> $GITHUB_STEP_SUMMARY
