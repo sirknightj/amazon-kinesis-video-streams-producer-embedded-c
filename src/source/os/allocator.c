@@ -24,6 +24,12 @@
 void *kvsMalloc(size_t bytes)
 {
     return malloc(bytes);
+
+//    void *ptr = NULL;
+//    if (posix_memalign(&ptr, 16, bytes) != 0) {
+//        return NULL;  // Allocation failed
+//    }
+//    return ptr;
 }
 
 void *kvsRealloc(void *ptr, size_t bytes)

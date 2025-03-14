@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.2.0)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake;${CMAKE_MODULE_PATH}")
+
 project(kvs-embedded-c)
 
 # Options
@@ -24,7 +25,17 @@ endif()
 
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s -Wl,--gc-sections")
+#    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl")
+#    add_compile_options(-fno-omit-frame-pointer)
+    add_compile_options(-fsanitize=undefined -fno-omit-frame-pointer -g)
+    add_link_options(-fsanitize=undefined)
+
+#    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address)
+#
+    add_compile_options(-Wno-deprecated-declarations)
+    set(CMAKE_C_FLAGS_RELEASE "-O0")  # Disable optimization in Release mode
 endif()
 
 # Checking platform properties

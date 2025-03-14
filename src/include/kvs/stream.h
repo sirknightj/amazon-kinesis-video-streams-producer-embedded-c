@@ -27,6 +27,7 @@ typedef struct DataFrameIn
     bool bIsKeyFrame;
     TrackType_t xTrackType;
     void *pUserData;
+    bool isLastFrame;
 } DataFrameIn_t;
 
 typedef struct DataFrame *DataFrameHandle;
@@ -132,6 +133,9 @@ int Kvs_streamMemStatTotal(StreamHandle xStreamHandle, size_t *puMemTotal);
  */
 int Kvs_dataFrameGetContent(DataFrameHandle xDataFrameHandle, uint8_t **ppMkvHeader, size_t *puMkvHeaderLen, uint8_t **ppData, size_t *puDataLen);
 
+int Kvs_dataFrameAddTags(DataFrameHandle xDataFrameHandle, MkvTag_t* tagsList, size_t tagsListLen, bool endOfStream, uint8_t **ppMkvHeader, size_t *puMkvHeaderLen, uint8_t **ppData, size_t *puDataLen);
+int addTagsAtEnd(DataFrameHandle xDataFrameHandle, MkvTag_t* tagsList, size_t tagsListLen,
+                 uint8_t **ppMkvHeader, size_t *puMkvHeaderLen, uint8_t **ppData, size_t *puDataLen);
 /**
  * @brief Terminate a data frame handle
  *

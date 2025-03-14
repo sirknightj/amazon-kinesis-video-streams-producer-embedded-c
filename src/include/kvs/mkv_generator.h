@@ -38,6 +38,19 @@
 
 #define MKV_TRACK_SIZE          ( 2 )
 
+#define MAX_TAG_NAME_LEN    128
+#define MAX_TAG_VALUE_LEN   256
+
+typedef struct {
+    char key[MAX_TAG_NAME_LEN];
+    char value[MAX_TAG_VALUE_LEN];
+} MkvTag_t;
+
+typedef struct {
+    uint8_t* buffer;
+    size_t size;
+} MkvTagsBuffer_t;
+
 typedef enum TrackType
 {
     TRACK_VIDEO = 1,
@@ -212,5 +225,15 @@ int Mkv_generateAacCodecPrivateData(Mpeg4AudioObjectTypes_t objectType, uint32_t
  * @return 0 on success, non-zero value otherwise
  */
 int Mkv_generatePcmCodecPrivateData(PcmFormatCode_t format, uint32_t uSamplingRate, uint16_t channels, uint8_t **ppCodecPrivateData, size_t *puCodecPrivateDataLen);
+
+/**
+ * @brief Write MKV tags to the buffer. (MkvTagsBuffer_t contains a length field)
+ *
+ * @param numTags length of tagsList
+ * @param tagsList the tags to write
+ * @param out buffer containing the bytes written and its length
+ * @return 0 on success, non-zero value otherwise
+ */
+int Mkv_initializeTagsHdr(uint32_t numTags, const MkvTag_t tagsList[], MkvTagsBuffer_t* out);
 
 #endif /* KVS_MKV_GENERATOR_H */

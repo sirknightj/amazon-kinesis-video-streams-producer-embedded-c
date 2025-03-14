@@ -113,6 +113,8 @@ typedef struct KvsApp
 
     bool isAudioTrackPresent;
     AudioTrackInfo_t *pAudioTrackInfo;
+    MkvTag_t* tagsList;
+    size_t tagsListLen;
 
     /* Session scope callbacks */
     OnMkvSentCallbackInfo_t onMkvSentCallbackInfo;
@@ -515,6 +517,24 @@ static int updateAndVerifyRestfulReqParameters(KvsApp_t *pKvs)
     return res;
 }
 
+static int setupTagsForSession(KvsApp_t *pKvs)
+{
+    int res = KVS_ERRNO_NONE;
+
+    const size_t tagsListLen = 9;
+    MkvTag_t* tags = kvsMalloc(tagsListLen * sizeof(MkvTag_t));
+
+    for (int i = 1; i <= 9; i++) {
+        snprintf((char*) tags[i-1].key, 128, "test_key_%d", i);
+        snprintf((char*) tags[i-1].value, 256, "test_value_%d", i);
+    }
+
+    pKvs->tagsList = tags;
+    pKvs->tagsListLen = tagsListLen;
+
+    return res;
+}
+
 static int setupDataEndpoint(KvsApp_t *pKvs)
 {
     int res = KVS_ERRNO_NONE;
@@ -763,7 +783,8 @@ static int prvPutMediaSendData(KvsApp_t *pKvs, int *pxSendCnt, bool bForceSend)
     if (pKvs->xStreamHandle != NULL &&
         pKvs->isEbmlHeaderUpdated == true &&
         Kvs_streamAvailOnTrack(pKvs->xStreamHandle, TRACK_VIDEO) &&
-        (!bForceSend || !pKvs->isAudioTrackPresent || Kvs_streamAvailOnTrack(pKvs->xStreamHandle, TRACK_AUDIO)))
+//        (bForceSend || !pKvs->isAudioTrackPresent || Kvs_streamAvailOnTrack(pKvs->xStreamHandle, TRACK_AUDIO)))
+        (!pKvs->isAudioTrackPresent || Kvs_streamAvailOnTrack(pKvs->xStreamHandle, TRACK_AUDIO)))
     {
         if ((xDataFrameHandle = Kvs_streamPop(pKvs->xStreamHandle)) == NULL)
         {
@@ -780,6 +801,18 @@ static int prvPutMediaSendData(KvsApp_t *pKvs, int *pxSendCnt, bool bForceSend)
             LogError("Failed to get data and mkv header to send");
             /* Propagate the res error */
         }
+        // At the start of a new cluster, pre-pend any tags (attaching tags to the end of the previous cluster)
+        else if (
+            (((DataFrameIn_t *)xDataFrameHandle)->xClusterType == MKV_CLUSTER) &&
+            (res = Kvs_dataFrameAddTags(xDataFrameHandle, pKvs->tagsList, pKvs->tagsListLen, false, &pMkvHeader, &uMkvHeaderLen, &pData, &uDataLen)) != KVS_ERRNO_NONE) {
+            LogError("Failed to add tags");
+            /* Propagate the res error */
+        }
+//        // At the end of the session, append the tags (since there's no more clusters, the above line won't get triggered)
+//        else if (bForceSend && (res = addTagsAtEnd(xDataFrameHandle, pKvs->tagsList, pKvs->tagsListLen, &pMkvHeader, &uMkvHeaderLen, &pData, &uDataLen) != KVS_ERRNO_NONE)) {
+//            LogError("Failed to add tags at the end");
+//            /* Propagate the res error */
+//        }
         else if ((res = Kvs_putMediaUpdate(pKvs->xPutMediaHandle, pMkvHeader, uMkvHeaderLen, pData, uDataLen)) != KVS_ERRNO_NONE)
         {
             LogError("Failed to update");
@@ -1315,6 +1348,10 @@ int KvsApp_open(KvsAppHandle handle)
         if ((res = updateAndVerifyRestfulReqParameters(pKvs)) != KVS_ERRNO_NONE)
         {
             LogError("Failed to setup KVS");
+            /* Propagate the res error */
+        }
+        else if ((res = setupTagsForSession(pKvs)) != KVS_ERRNO_NONE) {
+            LogError("Failed to setup tags for session");
             /* Propagate the res error */
         }
         else if ((res = setupDataEndpoint(pKvs)) != KVS_ERRNO_NONE)
