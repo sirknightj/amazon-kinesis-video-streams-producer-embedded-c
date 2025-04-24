@@ -43,7 +43,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE="Debug" -DENABLE_MKV_DUMP=ON
+          cmake .. -DCMAKE_BUILD_TYPE="Release" -DENABLE_MKV_DUMP=ON
           make -j
 
       - name: Setup AWS Credentials
